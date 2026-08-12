@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Raw downloads (30 MB) and the dataset built from them.
+# Both are reproducible byte-for-byte: ./scripts/fetch_raw.sh (or `make data`).
+# data/reports.csv and data/report_params.csv are the hand-authored catalog and
+# ARE tracked -- only the generated market data is ignored.
+data/raw/
+data/nsdq_daily.csv
+data/nsdq_symbols.csv
+
+# Local Claude Code settings. launch.json is shared; settings.local.json is not.
+.claude/settings.local.json
+
+# Generated artefacts and logs
+var/reports/*
+var/log/*
+var/*.pid
+!var/reports/.gitkeep
+!var/log/.gitkeep
+
+.DS_Store

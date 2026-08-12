@@ -1,0 +1,10 @@
+# Middle tier
+fastapi>=0.110
+uvicorn[standard]>=0.27
+pykx>=4.0            # IPC to kdb+; also hosts kdb/*.q locally via scripts/serve_q.py
+
+# PDF rendering on the kdb+ host is external -- see scripts/html2pdf.sh
+
+# Tests
+httpx>=0.27
+pytest>=8.0

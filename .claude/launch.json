@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "report-console",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": [
+        "/Users/frank/Documents/project_folder/kdb_front_end_prototype_project/scripts/dev_stack.sh"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "report-console-attach",
+      "url": "http://localhost:8000",
+      "port": 8000
+    }
+  ]
+}
