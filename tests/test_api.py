@@ -1,7 +1,7 @@
 """End-to-end tests: browser JSON in, real kdb+ IPC out, real data back.
 
 Nothing is stubbed. Each test drives the FastAPI app, which opens a genuine
-qPython handle to a server speaking the kdb+ wire protocol over a real socket.
+PyKX connection to a real kdb+ gateway running kdb/*.q over a real socket.
 """
 from __future__ import annotations
 
@@ -268,8 +268,10 @@ def test_required_param_with_no_default_is_rejected():
     from app.validate import coerce_params
 
     report = Report({
-        "report_id": "t", "name": "T", "q_func": ".x.y", "formats": "table",
-        "default_format": "table", "timeout_s": "5", "max_rows": "10",
+        "report_id": "t", "name": "T", "category": "Test",
+        "q_file": "kdb/reports/daily_close.q", "q_func": ".x.y",
+        "formats": "table", "default_format": "table",
+        "timeout_s": "5", "max_rows": "10",
     })
     report.params.append(Param({
         "report_id": "t", "param": "sym", "label": "Symbol", "type": "sym",
@@ -410,3 +412,11 @@ def test_index_page_is_served(client):
 def test_static_assets_are_served(client):
     for path in ("/static/app.js", "/static/styles.css"):
         assert client.get(path).status_code == 200
+
+
+def test_catalog_declares_a_q_file_for_every_report(client):
+    from app.main import catalog
+    import os
+    for report in catalog.reports.values():
+        assert report.q_file, report.report_id
+        assert os.path.isfile(report.q_file), report.q_file

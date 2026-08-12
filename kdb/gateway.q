@@ -33,6 +33,29 @@
   if[tr; res:maxRows sublist res];
   `status`report`format`payload`meta!(`ok; rid; `table; res; mkMeta[n;tr;el])};
 
+/ ------------------------------------------------------- catalog-driven load
+/ data/reports.csv is the single source of truth for both sides. The gateway
+/- reads it, loads every q file it names, and builds the dispatch whitelist
+/- from the q_func column -- so adding a report is a CSV row plus a .q file,
+/- with no q edit here.
+/-
+/ 0: has no quoted-field support, so no value in the catalog may contain a
+/- comma. Descriptions are written comma-free for exactly that reason.
+.gw.catalogFile:$[count getenv`REPORT_CATALOG;
+                  getenv`REPORT_CATALOG;
+                  "data/reports.csv"];
+
+/ report_id category name description q_file q_func formats
+/ default_format timeout_s max_rows tags
+.gw.catalog:("SSS*SSSSFJS";enlist ",") 0: hsym `$.gw.catalogFile;
+
+{system "l ",string x} each distinct .gw.catalog`q_file;
+
+/ report_id -> function name. A client can never name anything outside this.
+.rpt.fn:(!). .gw.catalog`report_id`q_func;
+
+-1 "gateway.q: ",string[count .rpt.fn]," reports from ",.gw.catalogFile;
+
 / ------------------------------------------------------------------- .rpt.run
 / Output format is a property of the *request*, not a report parameter, so it
 / is a separate argument rather than a magic key inside p. (It also has to be:

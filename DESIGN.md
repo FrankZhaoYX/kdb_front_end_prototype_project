@@ -110,8 +110,9 @@ BROWSER                    MIDDLE TIER (FastAPI)                 KDB
 | Transport | `app/kdbclient.py` | PyKX handle pool keyed by timeout, error mapping |
 | Encoding | `app/serialize.py` | PyKX values → JSON |
 | Artefacts | `app/artifacts.py` | Custody of files kdb wrote to disk |
-| Gateway | `kdb/gateway.q` | `.z.pg`, allow list, `.Q.trp`, envelope construction |
-| Reports | `kdb/reports.q` | The queries themselves |
+| Gateway | `kdb/gateway.q` | Reads the catalog, loads each `q_file`, `.z.pg`, `.Q.trp`, envelopes |
+| Helpers | `kdb/lib.q` | Shared assertions, rounding, tearsheet HTML |
+| Reports | `kdb/reports/*.q` | One file per report, located via the catalog's `q_file` |
 
 ---
 
@@ -130,8 +131,11 @@ There are two independent guards on the q side:
 
 ```q
 .gw.allow:`.rpt.run`.rpt.symbols`.rpt.range`.rpt.ping`.rpt.sleep;  / what may be named
-.rpt.fn:`daily_close`top_movers`...!`.rpt.dailyClose`.rpt.topMovers`...;  / what may be run
+.rpt.fn:(!). .gw.catalog`report_id`q_func;                         / what may be run
 ```
+
+The second is built from the catalog, so the whitelist cannot drift from the
+list of reports the UI offers.
 
 ### 4.2 One envelope for every output format
 
@@ -144,8 +148,10 @@ There are two independent guards on the q side:
 
 ### 4.3 The catalog is the contract
 
-Both sides read it. A new report is two CSV rows plus a q function — no Python,
-no JavaScript. The CSVs hot-reload on mtime change.
+Both sides read it, and the q gateway loads its code from it: `q_file` says
+where a report lives, `q_func` is the entry point and the whitelist. A new
+report is a CSV row plus a `.q` file — no q edit, no Python, no JavaScript.
+The CSVs hot-reload on mtime change.
 
 ---
 
@@ -345,7 +351,7 @@ There is **one** implementation and the tests run against it:
 make test
 ```
 
-43 end-to-end tests. Each boots a real kdb+ gateway, then drives the real
+44 end-to-end tests. Each boots a real kdb+ gateway, then drives the real
 FastAPI app through PyKX over a real socket. Nothing is stubbed, and there is no
 second implementation to drift out of sync with the q code.
 

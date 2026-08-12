@@ -121,10 +121,10 @@
       sel.appendChild(el("option", { value: "", text: "no reports match" }));
       state.selected = null;
       state.detail = null;
-      $("report-desc").textContent = "";
-      $("param-form").classList.add("hidden");
-      $("params-empty").classList.remove("hidden");
-      $("report-name").textContent = "Parameters";
+      $("report-desc").textContent = "No reports match that filter.";
+      $("param-fields").textContent = "";
+      $("format-field").textContent = "";
+      $("run-btn").disabled = true;
       return;
     }
 
@@ -162,8 +162,8 @@
       input = el("select", { id: "p_" + p.param, multiple: "multiple" });
       loadOptions(p, input, true);
       wrap.appendChild(input);
-      wrap.appendChild(el("div", { class: "hint",
-        text: "Ctrl/Cmd-click for several. Leave empty for all." }));
+      wrap.title = (p.help ? p.help + " " : "") +
+        "Ctrl/Cmd-click for several. Leave empty for all.";
     } else if (p.widget === "select") {
       input = el("select", { id: "p_" + p.param });
       if (p.dynamic_options) loadOptions(p, input, false);
@@ -185,7 +185,7 @@
     input.dataset.param = p.param;
     input.dataset.ptype = p.type;
 
-    if (p.help) wrap.appendChild(el("div", { class: "help", text: p.help }));
+    if (p.help) wrap.title = p.help;   // compact bar: help becomes a tooltip
     wrap.appendChild(el("div", { class: "err" }));
     return wrap;
   }
@@ -209,12 +209,7 @@
   }
 
   function renderForm(r) {
-    $("params-empty").classList.add("hidden");
-    var form = $("param-form");
-    form.classList.remove("hidden");
-    // The name lives in the selector bar now; the sidebar heading just says
-    // what this panel is, qualified by the report.
-    $("report-name").textContent = r.name + " — parameters";
+    $("run-btn").disabled = false;
     $("report-desc").textContent = r.description;
 
     var fields = $("param-fields");

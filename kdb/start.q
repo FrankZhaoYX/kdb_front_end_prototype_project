@@ -11,7 +11,7 @@
 / reports.q and gateway.q as they are.
 
 \l kdb/data.q
-\l kdb/reports.q
+\l kdb/lib.q
 \l kdb/gateway.q
 
 .rpt.outDir:$[count getenv`KDB_REPORT_DIR; getenv`KDB_REPORT_DIR; "var/reports"];
