@@ -78,15 +78,16 @@ class Param:
 
 
 class Report:
-    __slots__ = ("report_id", "name", "category", "description", "q_func",
-                 "formats", "default_format", "timeout_s", "max_rows", "tags",
-                 "params")
+    __slots__ = ("report_id", "name", "category", "description", "q_file",
+                 "q_func", "formats", "default_format", "timeout_s",
+                 "max_rows", "tags", "params")
 
     def __init__(self, row: Dict[str, str]):
         self.report_id = (row.get("report_id") or "").strip()
         self.name = (row.get("name") or self.report_id).strip()
         self.category = (row.get("category") or "General").strip()
         self.description = (row.get("description") or "").strip()
+        self.q_file = (row.get("q_file") or "").strip()
         self.q_func = (row.get("q_func") or "").strip()
         self.formats = [f for f in
                         re.split(r"[|,]", (row.get("formats") or "table")) if f.strip()]
@@ -101,6 +102,8 @@ class Report:
         self.params: List[Param] = []
         if not self.q_func:
             raise ValueError("%s: q_func is required" % self.report_id)
+        if not self.q_file:
+            raise ValueError("%s: q_file is required" % self.report_id)
         if self.default_format not in self.formats:
             raise ValueError(
                 "%s: default_format %r not in formats %s"
@@ -129,6 +132,7 @@ class Report:
         d = self.summary()
         d["timeout_s"] = self.timeout_s
         d["max_rows"] = self.max_rows
+        d["q_file"] = self.q_file
         d["params"] = [p.as_dict(resolve) for p in self.params]
         return d
 
@@ -251,3 +255,4 @@ def make_resolver(min_date: Optional[dt.date], max_date: Optional[dt.date]):
         return base.isoformat()
 
     return resolve
+

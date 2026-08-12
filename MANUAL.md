@@ -31,8 +31,8 @@ make dev
 Then open <http://127.0.0.1:8000>. `make stop` shuts it down.
 
 `make setup` builds `.venv` and installs dependencies. `make data` downloads two
-public CSVs (~30 MB) and builds the dataset. `make dev` starts the mock KDB
-server on port 5000 and the app on port 8000, and tails both logs.
+public CSVs (~30 MB) and builds the dataset. `make dev` starts the kdb+
+gateway and the app on port 8000, and tails both logs.
 
 To run the pieces in separate terminals instead:
 
@@ -58,7 +58,7 @@ backend: the real `kdb/*.q`. See [§9](#9-running-against-real-kdb).
 | kdb+ gateway | `kdb/` | `.q` sources: the reports, the `.z.pg` entry point, the allow list. Executed against KDB-X 5.0. |
 | Local host for it | `scripts/serve_q.py` | Serves `kdb/*.q` on a socket from embedded KDB-X — see [§9](#9-running-against-real-kdb). |
 | Catalog | `data/*.csv` | The report list and their parameters. Two CSVs. |
-| Tests | `tests/` | 43 end-to-end tests against real kdb+. Nothing stubbed. |
+| Tests | `tests/` | 44 end-to-end tests against real kdb+. Nothing stubbed. |
 
 ---
 
@@ -82,7 +82,7 @@ BROWSER                    MIDDLE TIER (FastAPI)                 KDB
    │                                │ 2. coerce each param to a   │
    │                                │    q type; reject bad ones  │
    │                                │    BEFORE touching kdb      │
-   │                                │ 3. .rpt.run[id;dict;maxRows]│
+   │                                │ 3. .rpt.run[id;dict;max;fmt]│
    │                                │────────────────────────────>│
    │                                │                             │ .Q.trp
    │                                │<─── envelope ───────────────│
@@ -105,8 +105,8 @@ query string, so there is no injection surface to defend.
 `format` is `` `table ``, `` `html `` or `` `pdf ``. Errors reuse the same shape
 with ``status:`err``. The front-end has one code path.
 
-**3. The catalog is the contract.** Both sides read it. Adding a report is two
-CSV rows and a q function — no Python, no JavaScript.
+**3. The catalog is the contract.** Both sides read it; the gateway even loads
+its q from it. Adding a report is a CSV row plus a `.q` file.
 
 ---
 
@@ -140,18 +140,37 @@ loader has no concept of a quoted field — see `q_safe()` in
 
 ## 5. The catalog — adding a report
 
-### `data/reports.csv`
+### `data/reports.csv` — one row per report
 
 | Column | Meaning |
 |---|---|
-| `report_id` | Stable key used by the API |
-| `name`, `category`, `description` | Shown in the picker; searched |
-| `q_func` | The q function. **This is the whitelist** |
+| `report_id` | Stable key used by the API and as the join key |
+| `category` | First dropdown |
+| `name` | Second dropdown, filtered by category |
+| `description` | Shown under the pickers; searched |
+| `q_file` | The file defining the report, e.g. `kdb/reports/top_movers.q` |
+| `q_func` | The entry point in that file. **This is the whitelist** |
 | `formats` | Pipe-separated: `table`, `html`, `pdf` |
 | `default_format` | Pre-selected in the UI |
 | `timeout_s` | Per-report IPC timeout, capped by `KDB_MAX_TIMEOUT_S` |
 | `max_rows` | Truncation ceiling; the response flags when it bites |
 | `tags` | Extra search terms |
+
+The gateway reads this file at startup, loads every `q_file` it names, and
+builds its dispatch table from `q_func`:
+
+```q
+.gw.catalog:("SSS*SSSSFJS";enlist ",") 0: hsym `$.gw.catalogFile;
+{system "l ",string x} each distinct .gw.catalog`q_file;
+.rpt.fn:(!). .gw.catalog`report_id`q_func;
+```
+
+So the CSV is the single source of truth for both sides, and nothing about a
+report is hardcoded in q.
+
+> **No value may contain a comma.** kdb's `0:` has no quoted-field support, so
+> a comma would silently shift every column to its right. Descriptions are
+> written comma-free for that reason.
 
 ### `data/report_params.csv`
 
@@ -186,7 +205,8 @@ is why the form opens on `2018-02-07` rather than an empty box.
 
 ### Adding one, end to end
 
-1. Write the q function in `kdb/reports.q` and add it to `.rpt.fn`.
+1. Write the q function in a new `kdb/reports/<report_id>.q`, using the
+   helpers in `kdb/lib.q`.
 2. Add one row to `reports.csv` and one row per parameter to
    `report_params.csv`.
 3. Reload the page. The CSVs are hot-reloaded on mtime change — no restart.
@@ -301,7 +321,7 @@ each.
 make test
 ```
 
-43 tests, ~4 seconds. Each one boots a real mock-KDB server on a free port and
+44 tests, ~18 seconds. Each one boots a real mock-KDB server on a free port and
 drives the real FastAPI app through a real socket. Coverage:
 
 - every report, every format (table / HTML / PDF)
@@ -393,7 +413,7 @@ KDB_HOST=your-host KDB_PORT=5000 make app
 make test
 ```
 
-43 end-to-end tests against real kdb+: every report, every format, every error
+44 end-to-end tests against real kdb+: every report, every format, every error
 path, plus the transport behaviours in §7. The suite starts its own gateway;
 set `KDB_TEST_PORT` to point it at one you already run.
 
@@ -560,11 +580,15 @@ purpose, so a default can never produce an empty report.
 │   └── static/              index.html · app.js · styles.css
 │
 ├── kdb/                     ── kdb+ gateway, verified on KDB-X 5.0 ──
-│   ├── start.q  data.q  reports.q  gateway.q
+│   ├── start.q              loader
+│   ├── data.q               loads the NASDAQ bars, derives chg_pct
+│   ├── lib.q                shared helpers every report calls
+│   ├── gateway.q            reads the catalog, loads q_file, .z.pg, .Q.trp
+│   └── reports/             one .q file per report, named by the catalog
 │
 └── tests/
     ├── conftest.py          boots a real kdb+ gateway per session
-    └── test_api.py          43 end-to-end tests against real kdb+
+    └── test_api.py          44 end-to-end tests against real kdb+
 ```
 
 ---

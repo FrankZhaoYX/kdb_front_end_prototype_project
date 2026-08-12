@@ -216,7 +216,7 @@ def main(argv=None) -> int:
     _WORK = queue.Queue()
     worker = threading.Thread(
         target=q_thread,
-        args=(("kdb/data.q", "kdb/reports.q", "kdb/gateway.q"),),
+        args=(("kdb/data.q", "kdb/lib.q", "kdb/gateway.q"),),
         daemon=True,
         name="kdb+",
     )

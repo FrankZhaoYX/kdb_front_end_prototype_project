@@ -50,3 +50,4 @@ REPORT_DIR = os.path.abspath(
 ARTIFACT_TTL_S = _float("REPORT_ARTIFACT_TTL_S", 3600.0)
 
 STATIC_DIR = os.path.join(ROOT, "app", "static")
+

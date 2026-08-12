@@ -7,7 +7,8 @@
       "runtimeArgs": [
         "/Users/frank/Documents/project_folder/kdb_front_end_prototype_project/scripts/dev_stack.sh"
       ],
-      "port": 8000
+      "port": 8000,
+      "autoPort": true
     },
     {
       "name": "report-console-attach",

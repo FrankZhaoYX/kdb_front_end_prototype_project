@@ -41,5 +41,5 @@ format, the error table, the testing guide, and running against real kdb+.
 make test
 ```
 
-43 end-to-end tests against **real kdb+ 5.0** — every report, every format,
+44 end-to-end tests against **real kdb+ 5.0** — every report, every format,
 every error path, over a real socket. Nothing is stubbed.

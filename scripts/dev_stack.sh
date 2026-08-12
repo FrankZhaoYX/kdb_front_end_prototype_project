@@ -23,9 +23,32 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-KDB_PORT="${KDB_PORT:-5000}"
-APP_PORT="${APP_PORT:-8000}"
+# PORT is what a launcher (.claude/launch.json with autoPort) assigns; APP_PORT
+# still wins if you set it explicitly. Nothing here needs a fixed port -- the
+# front-end uses relative URLs and there are no callbacks pointing at us.
+APP_PORT="${APP_PORT:-${PORT:-8000}}"
 APP_HOST="${APP_HOST:-127.0.0.1}"
+
+# The gateway port is internal: only this script and the app it launches use
+# it. If it is already taken -- a stale gateway, or macOS Control Centre
+# squatting on 5000 -- shift to a free one rather than failing to bind, unless
+# the caller pinned it deliberately.
+KDB_PORT_EXPLICIT="${KDB_PORT:-}"
+KDB_PORT="${KDB_PORT:-5000}"
+port_free() { ! nc -z 127.0.0.1 "$1" >/dev/null 2>&1; }
+if [ -z "$KDB_PORT_EXPLICIT" ] && ! port_free "$KDB_PORT"; then
+  NEW_PORT="$(
+    "$ROOT/.venv/bin/python" - <<'PY' 2>/dev/null || echo ""
+import socket
+s = socket.socket(); s.bind(("127.0.0.1", 0))
+print(s.getsockname()[1]); s.close()
+PY
+  )"
+  if [ -n "$NEW_PORT" ]; then
+    echo "dev_stack: port $KDB_PORT is busy, using $NEW_PORT for the kdb+ gateway" >&2
+    KDB_PORT="$NEW_PORT"
+  fi
+fi
 PY="$ROOT/.venv/bin/python"
 export KDB_HTML2PDF="${KDB_HTML2PDF:-$ROOT/scripts/html2pdf.sh}"
 

@@ -1,7 +1,7 @@
-report_id,name,category,description,q_func,formats,default_format,timeout_s,max_rows,tags
-daily_close,Daily Closing Prices,Prices,"Closing price and daily volume per symbol over a date range.",.rpt.dailyClose,"table",table,30,200000,"prices|close|eod|timeseries"
-top_movers,Top Movers,Prices,"Largest single-day percentage gainers and losers on a given business date.",.rpt.topMovers,"table",table,20,5000,"movers|gainers|losers|performance"
-volume_leaders,Volume Leaders,Liquidity,"Symbols ranked by total traded volume and average daily volume over a range.",.rpt.volumeLeaders,"table",table,30,5000,"volume|liquidity|adv|turnover"
-ohlc_summary,Symbol Statistics Summary,Analytics,"Per-symbol OHLC statistics: high, low, return, annualised volatility and average volume.",.rpt.ohlcSummary,"table",table,45,5000,"stats|summary|volatility|analytics|risk"
-market_breadth,Market Breadth,Analytics,"Daily advancers, decliners and unchanged counts across the NASDAQ universe.",.rpt.marketBreadth,"table|html",table,45,5000,"breadth|advancers|decliners|market|chart"
-symbol_tearsheet,Symbol Tearsheet,Research,"One-page research summary for a single symbol, rendered as PDF or HTML.",.rpt.symbolTearsheet,"pdf|html",pdf,60,1,"tearsheet|pdf|research|single|report"
+report_id,category,name,description,q_file,q_func,formats,default_format,timeout_s,max_rows,tags
+daily_close,Prices,Daily Closing Prices,Closing price and daily volume per symbol over a date range,kdb/reports/daily_close.q,.rpt.dailyClose,table,table,30,200000,prices|close|eod|timeseries
+top_movers,Prices,Top Movers,Largest single-day percentage gainers and losers on a given business date,kdb/reports/top_movers.q,.rpt.topMovers,table,table,20,5000,movers|gainers|losers|performance
+volume_leaders,Liquidity,Volume Leaders,Symbols ranked by total traded volume and average daily volume over a range,kdb/reports/volume_leaders.q,.rpt.volumeLeaders,table,table,30,5000,volume|liquidity|adv|turnover
+ohlc_summary,Analytics,Symbol Statistics Summary,Per-symbol OHLC statistics covering high low return annualised volatility and average volume,kdb/reports/ohlc_summary.q,.rpt.ohlcSummary,table,table,45,5000,stats|summary|volatility|analytics|risk
+market_breadth,Analytics,Market Breadth,Daily advancers decliners and unchanged counts across the NASDAQ universe,kdb/reports/market_breadth.q,.rpt.marketBreadth,table|html,table,45,5000,breadth|advancers|decliners|market|chart
+symbol_tearsheet,Research,Symbol Tearsheet,One-page research summary for a single symbol rendered as PDF or HTML,kdb/reports/symbol_tearsheet.q,.rpt.symbolTearsheet,pdf|html,pdf,60,1,tearsheet|pdf|research|single|report
