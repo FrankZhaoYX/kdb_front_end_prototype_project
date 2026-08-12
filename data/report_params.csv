@@ -1,0 +1,20 @@
+report_id,param,label,type,required,default,widget,options,options_q,min,max,help,ord
+daily_close,date_from,From Date,date,1,@max_date-30d,date,,,@min_date,@max_date,First business date to include.,1
+daily_close,date_to,To Date,date,1,@max_date,date,,,@min_date,@max_date,Last business date to include.,2
+daily_close,symbols,Symbols,symlist,0,,multiselect,,.rpt.symbols,,,Leave empty for every NASDAQ symbol in the universe.,3
+top_movers,dt,Business Date,date,1,@max_date,date,,,@min_date,@max_date,Single business date to rank.,1
+top_movers,direction,Direction,enum,1,both,select,up|down|both,,,,"Gainers only, losers only, or both ends of the ranking.",2
+top_movers,top_n,Rows Per Side,long,1,10,number,,,1,100,How many symbols to return on each side.,3
+top_movers,min_volume,Min Volume,long,0,0,number,,,0,,Exclude rows below this traded volume.,4
+volume_leaders,date_from,From Date,date,1,@max_date-90d,date,,,@min_date,@max_date,First business date to include.,1
+volume_leaders,date_to,To Date,date,1,@max_date,date,,,@min_date,@max_date,Last business date to include.,2
+volume_leaders,top_n,Top N,long,1,25,number,,,1,200,Number of symbols to return.,3
+ohlc_summary,date_from,From Date,date,1,@max_date-365d,date,,,@min_date,@max_date,First business date to include.,1
+ohlc_summary,date_to,To Date,date,1,@max_date,date,,,@min_date,@max_date,Last business date to include.,2
+ohlc_summary,symbols,Symbols,symlist,0,,multiselect,,.rpt.symbols,,,Leave empty for every NASDAQ symbol in the universe.,3
+ohlc_summary,min_observations,Min Observations,long,0,20,number,,,1,,Drop symbols with fewer than this many business dates.,4
+market_breadth,date_from,From Date,date,1,@max_date-90d,date,,,@min_date,@max_date,First business date to include.,1
+market_breadth,date_to,To Date,date,1,@max_date,date,,,@min_date,@max_date,Last business date to include.,2
+symbol_tearsheet,sym,Symbol,sym,1,AAPL,select,,.rpt.symbols,,,The single symbol to profile.,1
+symbol_tearsheet,date_from,From Date,date,1,@max_date-365d,date,,,@min_date,@max_date,Start of the analysis window.,2
+symbol_tearsheet,date_to,To Date,date,1,@max_date,date,,,@min_date,@max_date,End of the analysis window.,3
